@@ -38,6 +38,10 @@ enum class AppScreen {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Explicitly allow screenshots (clear FLAG_SECURE if it was somehow set)
+        window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        
         enableEdgeToEdge()
         setContent {
             NutriaiTheme {
@@ -88,6 +92,7 @@ class MainActivity : ComponentActivity() {
                     }
                     AppScreen.Signup -> {
                         SignupScreen(
+                            viewModel = viewModel,
                             onSignupClick = { name, email, password -> 
                                 viewModel.register(name, email, password) {
                                     currentScreen = AppScreen.HealthProfile

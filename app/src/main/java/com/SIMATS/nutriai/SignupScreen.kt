@@ -25,7 +25,11 @@ import androidx.compose.ui.unit.sp
 import com.SIMATS.nutriai.ui.theme.*
 
 @Composable
-fun SignupScreen(onSignupClick: (String, String, String) -> Unit, onLoginClick: () -> Unit) {
+fun SignupScreen(
+    viewModel: NutriViewModel,
+    onSignupClick: (String, String, String) -> Unit,
+    onLoginClick: () -> Unit
+) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -163,21 +167,41 @@ fun SignupScreen(onSignupClick: (String, String, String) -> Unit, onLoginClick: 
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        // Error Message
+        if (viewModel.errorMessage != null) {
+            Text(
+                text = viewModel.errorMessage!!,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        }
+
         // Sign Up Button
         Button(
             onClick = { onSignupClick(name, email, password) },
+            enabled = !viewModel.isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
         ) {
-            Text(
-                text = "Create account",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            if (viewModel.isLoading) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(
+                    text = "Create account",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
         }
 
         Spacer(modifier = Modifier.weight(1f))
@@ -208,6 +232,10 @@ fun SignupScreen(onSignupClick: (String, String, String) -> Unit, onLoginClick: 
 @Composable
 fun SignupScreenPreview() {
     NutriaiTheme {
-        SignupScreen(onSignupClick = { _, _, _ -> }, onLoginClick = {})
+        SignupScreen(
+            viewModel = NutriViewModel(),
+            onSignupClick = { _, _, _ -> },
+            onLoginClick = {}
+        )
     }
 }

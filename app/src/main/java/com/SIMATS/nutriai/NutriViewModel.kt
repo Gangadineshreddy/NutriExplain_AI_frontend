@@ -49,6 +49,10 @@ class NutriViewModel : ViewModel() {
 
     fun register(name: String, email: String, pass: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
+            if (name.isBlank() || email.isBlank() || pass.isBlank()) {
+                errorMessage = "All fields are required"
+                return@launch
+            }
             isLoading = true
             errorMessage = null
             try {
@@ -470,23 +474,72 @@ class NutriViewModel : ViewModel() {
         }
     }
 
-    fun resetPassword(email: String, newPass: String, onResult: (Boolean) -> Unit) {
+    fun sendOtp(email: String, onResult: (Boolean, String?) -> Unit) {
+        viewModelScope.launch {
+            isLoading = true
+            errorMessage = null
+            try {
+                val response = RetrofitClient.instance.sendOtp(
+                    com.SIMATS.nutriai.network.SendOtpRequest(email)
+                )
+                if (response.isSuccessful) {
+                    onResult(true, null)
+                } else {
+                    val error = response.body()?.error ?: "Failed to send OTP"
+                    errorMessage = error
+                    onResult(false, error)
+                }
+            } catch (e: Exception) {
+                errorMessage = "Network error: ${e.message}"
+                onResult(false, errorMessage)
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    fun verifyOtp(email: String, otp: String, onResult: (Boolean, String?) -> Unit) {
+        viewModelScope.launch {
+            isLoading = true
+            errorMessage = null
+            try {
+                val response = RetrofitClient.instance.verifyOtp(
+                    com.SIMATS.nutriai.network.VerifyOtpRequest(email, otp)
+                )
+                if (response.isSuccessful) {
+                    onResult(true, null)
+                } else {
+                    val error = response.body()?.error ?: "Invalid OTP"
+                    errorMessage = error
+                    onResult(false, error)
+                }
+            } catch (e: Exception) {
+                errorMessage = "Network error: ${e.message}"
+                onResult(false, errorMessage)
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    fun resetPassword(email: String, otp: String, newPass: String, onResult: (Boolean, String?) -> Unit) {
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
             try {
                 val response = RetrofitClient.instance.resetPassword(
-                    com.SIMATS.nutriai.network.ResetPasswordRequest(email, newPass)
+                    com.SIMATS.nutriai.network.ResetPasswordRequest(email, otp, newPass)
                 )
                 if (response.isSuccessful) {
-                    onResult(true)
+                    onResult(true, null)
                 } else {
-                    errorMessage = response.body()?.error ?: "Reset failed"
-                    onResult(false)
+                    val error = response.body()?.error ?: "Reset failed"
+                    errorMessage = error
+                    onResult(false, error)
                 }
             } catch (e: Exception) {
                 errorMessage = "Network error: ${e.message}"
-                onResult(false)
+                onResult(false, errorMessage)
             } finally {
                 isLoading = false
             }

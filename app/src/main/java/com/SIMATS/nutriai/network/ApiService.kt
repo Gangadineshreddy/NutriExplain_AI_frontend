@@ -151,7 +151,17 @@ data class UpdateProfileRequest(
 
 data class ResetPasswordRequest(
     val email: String,
+    val otp: String,
     val new_password: String
+)
+
+data class SendOtpRequest(
+    val email: String
+)
+
+data class VerifyOtpRequest(
+    val email: String,
+    val otp: String
 )
 
 // --- API Interface ---
@@ -161,6 +171,12 @@ interface ApiService {
 
     @POST("/login")
     suspend fun loginUser(@Body request: LoginRequest): Response<ApiResponse>
+
+    @POST("/send-otp")
+    suspend fun sendOtp(@Body request: SendOtpRequest): Response<ApiResponse>
+
+    @POST("/verify-otp")
+    suspend fun verifyOtp(@Body request: VerifyOtpRequest): Response<ApiResponse>
 
     @POST("/reset-password")
     suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<ApiResponse>
